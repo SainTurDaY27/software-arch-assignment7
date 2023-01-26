@@ -1,0 +1,43 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: video-streaming
+spec:
+  selector:
+    app: video-streaming
+  ports:
+    - protocol: "TCP"
+      # Port accessible inside cluster
+      port: 8081
+      # Port to forward to inside the pod
+      targetPort: 8085
+      # Port accessible outside cluster
+      nodePort: 30001
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-streaming-deployment
+spec:
+  selector:
+    matchLabels:
+      app: video-streaming
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: video-streaming
+    spec:
+
+      containers:
+        - name: video-streaming
+          image: panuwat/video-streaming:latest
+          imagePullPolicy: Never
+          env:
+          - name: PORT
+            value: '8085'
+          ports:
+            - containerPort: 8085
